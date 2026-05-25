@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <title>リンクシナジーチェッカー</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0; padding: 0;
+      font-family: sans-serif;
+      background: #f7f7fa;
+      touch-action: manipulation;
+    }
+    body, .mainwrapper {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 4vw 7vw 2vw 7vw;
+      background: #f7f7fa;
+      border-bottom: 1px solid #eee;
+      z-index: 2;
+      flex-shrink: 0;
+      gap: 2vw;
+    }
+    .title {
+      font-size: 6vw;
+      font-weight: bold;
+      letter-spacing: .08em;
+      color: #273755;
+      margin-bottom: 2vw;
+      text-align: center;
+      width: 100%;
+    }
+    .togglelabel {
+      font-size: 4vw;
+      color: #2c72a2;
+      margin-bottom: 1vw;
+      text-align: center;
+      width: 100%;
+    }
+    .toggleset {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      margin-bottom: 2vw;
+    }
+    /* カスタムトグルスイッチ */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 9vw;
+      max-width: 48px;
+      height: 4.5vw;
+      max-height: 24px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0;}
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0;
+      right: 0; bottom: 0;
+      background-color: #ccc;
+      border-radius: 5vw;
+      transition: .2s;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 4vw; width: 4vw;
+      max-width: 21px; max-height: 21px;
+      left: 0.25vw; bottom: 0.25vw;
+      background-color: white;
+      border-radius: 50%;
+      transition: .2s;
+    }
+    input:checked + .slider {
+      background-color: #44b4f7;
+    }
+    input:checked + .slider:before {
+      transform: translateX(4vw);
+    }
+    .mainwrapper{
+      flex:1 1 auto;
+      min-height:0;
+      display:flex; flex-direction:column;
+    }
+    .gridarea-holder{
+      position:relative;
+      flex:1 1 auto;
+      display:flex;flex-direction:column;
+      min-height:0;
+    }
+    .grid-scroll-wrap{
+      flex:1 1 auto;
+      min-height:0;
+      overflow-y:auto;
+      overscroll-behavior: contain;
+      padding: 5vw 7vw 3vw 7vw;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 3vw;
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    @media (min-width: 600px) {
+      .grid { grid-template-columns: repeat(4, 1fr);}
+    }
+    .imgbox {
+      background: #fff;
+      border: 2px solid #aaa;
+      border-radius: 12px;
+      font-size: 4vw;
+      min-height: 13vw;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      margin: 0;
+      padding: 2vw;
+      transition: 0.17s;
+      box-shadow: 0 0.5vw 1vw #bbb1;
+      cursor: pointer;
+      position: relative;
+      text-align: center;
+      z-index:1;
+    }
+    .imgbox.selected { background: #a7e2fa; border-color: #2c72a2 !important; color: #222;}
+    .imgbox.sugg2 { background: #ffef9a; border-color: #d4ae36 !important; color: #643a00;}
+    .imgbox.sugg3 { background: #ffb0af; border-color: #cd4440 !important; color: #760000;}
+    .reset-btn { display:block; margin: 5vw auto 1vw auto; padding: 2.5vw 12vw; border: none; border-radius: 999px; background: #273755; color: #fff; font-size: 4vw; font-weight: bold; box-shadow: 0 0.2vw 0.5vw #3335;}
+    .result-holder{
+      flex-shrink: 0;
+      width: 100%;
+      background: #fff;
+      border-top: 1px solid #ddd;
+      box-shadow: 0 -3px 12px #9992;
+      padding: 3vw 7vw 5vw 7vw;
+      position:sticky;
+      bottom:0;
+      z-index:3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 20vw; /* 20vwで最低3行（スマホ換算で約3行分） */
+      max-height: 28vw;
+    }
+    .result-list{
+      font-size:4vw;
+      min-height: 18vw;
+      max-height: 28vw;
+      margin: 0;
+      padding: 0 0 2vw 2.0em;
+      color: #222;
+      width: 100%;
+      list-style-type: disc;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+    .result-list li {margin-top:1vw; min-height:4vw;}
+    @media (max-width:400px){
+      .grid {font-size:5vw;}
+      .result-list {font-size:5vw;}
+      .title {font-size:7vw;}
+      .togglelabel {font-size: 5vw;}
+      .result-holder{min-height:22vw;max-height:32vw;}
+      .result-list li{ min-height: 5vw;}
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span class="title">リンクシナジーチェッカー</span>
+    <span class="togglelabel">1人選択時で候補表示</span>
+    <div class="toggleset">
+      <!-- カスタムスイッチ -->
+      <label class="switch">
+        <input type="checkbox" id="toggleChk">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+  <div class="mainwrapper">
+    <div class="gridarea-holder">
+      <div class="grid-scroll-wrap">
+        <div id="grid" class="grid"></div>
+        <button class="reset-btn" onclick="clearSelections()">リセット</button>
+      </div>
+    </div>
+    <div class="result-holder">
+      <ul class="result-list" id="result"></ul>
+    </div>
+  </div>
+<script>
+const nameList = [
+  "天海春香","如月千早","星井美希","水瀬伊織",
+  "島村卯月","渋谷凛","本田未央","神崎蘭子",
+  "春日未来","最上静香","伊吹翼","真壁瑞希",
+  "天道輝","桜庭薫","柏木翼","硲道夫",
+  "櫻木真乃","風野灯織","八宮めぐる","小宮果穂",
+  "花海咲季","月村手毬","藤田ことね","紫雲清夏"
+];
+const CSV_URL = 'idol_data.csv';  // GitHub Pages/同じ場所にアップでOK
+
+let csvRaw = [];
+let selected = [];
+const grid = document.getElementById('grid');
+const boxes = [];
+let isCsvReady = false;
+
+let highlightSingle = false;
+
+// トグルスイッチ制御
+const toggleChk = document.getElementById('toggleChk');
+toggleChk.onchange = function(){
+  highlightSingle = toggleChk.checked;
+  refreshSuggestions();
+};
+
+// グリッド描画
+function renderGrid() {
+  grid.innerHTML = '';
+  for (let i=0; i<24; i++) {
+    const d = document.createElement('div');
+    d.className = 'imgbox';
+    d.textContent = nameList[i];
+    d.onclick = () => selectImage(i, d);
+    grid.appendChild(d);
+    boxes[i] = d;
+  }
+}
+async function fetchCsv(url, retries=2) {
+  try {
+    const res = await fetch(url);
+    if (!(res.ok)) throw new Error('CSV取得失敗 ' + url);
+    const text = await res.text();
+    csvRaw = text.trim().split('\n').map(row => row.trim().split(','));
+    isCsvReady = true;
+    refreshSuggestions();
+  } catch (e) {
+    if (retries>0) setTimeout(()=>fetchCsv(url,retries-1), 1000);
+    else alert('CSVの読込に失敗しました');
+  }
+}
+function selectImage(idx, elem) {
+  if (!isCsvReady) return;
+  if (selected.includes(idx)) {
+    selected = selected.filter(n=>n!==idx);
+    elem.classList.remove('selected');
+    showResult(null);
+    refreshSuggestions();
+    return;
+  }
+  if (selected.length>=3) return;
+  selected.push(idx);
+  elem.classList.add('selected');
+  if (selected.length===3) {
+    showResult(findResult());
+    clearSuggestions();
+  } else {
+    refreshSuggestions();
+  }
+}
+function clearSelections() {
+  selected = [];
+  boxes.forEach(d=>d.className='imgbox');
+  showResult(null);
+  refreshSuggestions();
+}
+function clearSuggestions() {
+  boxes.forEach(b => {
+    b.classList.remove('sugg2');
+    b.classList.remove('sugg3');
+  });
+}
+function refreshSuggestions() {
+  clearSuggestions();
+  if (!csvRaw.length || selected.length > 2) return;
+  // トグルON時は1人選択で候補強調。2人選択なら常時強調
+  if ((highlightSingle && selected.length === 1) || selected.length === 2) {
+    const selN = selected.map(idx => nameList[idx]);
+    let cands2=[], cands3=[];
+    for (let row of csvRaw) {
+      let group = row.slice(0,3);
+      let match = selN.every(n => group.includes(n));
+      if (match) {
+        const restNames = group.filter(n => !selN.includes(n));
+        const resCount = row.slice(3).filter(x=>x!=="").length;
+        if (restNames.length !== (3-selN.length)) continue;
+        if (resCount === 2) restNames.forEach(nm=>{ if (!cands2.includes(nm)) cands2.push(nm)});
+        if (resCount === 3) restNames.forEach(nm=>{ if (!cands3.includes(nm)) cands3.push(nm)});
+      }
+    }
+    cands3.forEach(name=>{
+      const idx = nameList.indexOf(name);
+      if (idx!==-1 && !selected.includes(idx)) boxes[idx].classList.add('sugg3');
+    });
+    cands2.forEach(name=>{
+      const idx = nameList.indexOf(name);
+      if (idx!==-1 && !selected.includes(idx) && !boxes[idx].classList.contains('sugg3')) boxes[idx].classList.add('sugg2');
+    });
+  }
+}
+function findResult() {
+  let selNames = selected.map(idx=>nameList[idx]).sort();
+  for (let row of csvRaw) {
+    let group = row.slice(0,3).slice().sort();
+    if (JSON.stringify(selNames) === JSON.stringify(group)) {
+      return row.slice(3).filter(x=>x!=="");
+    }
+  }
+  return ["該当なし"];
+}
+function showResult(arr) {
+  const el = document.getElementById('result');
+  // 必ず3行見えるよう空liを補完
+  let list = Array.isArray(arr) ? arr : [];
+  while(list.length < 3) list.push('');
+  el.innerHTML = list.map(x=>x?`<li>${x}</li>`:`<li style="opacity:.01;">-</li>`).join('');
+}
+renderGrid();
+fetchCsv(CSV_URL);
+</script>
+</body>
+</html>
