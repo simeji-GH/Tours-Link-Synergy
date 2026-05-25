@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <title>リンクシナジーチェッカー</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <style>
     html, body {
       height: 100%;
@@ -11,36 +11,69 @@
       font-family: sans-serif;
       background: #f7f7fa;
       touch-action: manipulation;
+      box-sizing: border-box;
+      width: 100vw;
+      overflow: hidden;
     }
-    body, .mainwrapper {
+    body {
       height: 100vh;
+      width: 100vw;
+      min-width: 100vw;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
+      box-sizing: border-box;
+    }
+    .mainwrapper {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      min-width: 0;
+      width: 100vw;
+      box-sizing: border-box;
     }
 
     .header {
+      width: 100vw;
+      min-width: 0;
+      flex-shrink: 0;
+      padding: 0 0 0 0;
       background: #f7f7fa;
       border-bottom: 1px solid #eee;
-      z-index: 2;
-      flex-shrink: 0;
-      padding: 4vw 7vw 2vw 7vw;
+      box-sizing: border-box;
+    }
+    .titlebar {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: space-between;
+      width: 100vw;
+      box-sizing: border-box;
+      padding: 4vw 4vw 1vw 4vw;
+      /* background: #eaf6ff; */
     }
     .title {
       font-size: 6vw;
       font-weight: bold;
       letter-spacing: .08em;
       color: #273755;
-      text-align: center;
-      margin-bottom: 2vw;
-      width: 100%;
+      margin: 0;
+      text-align: left;
+      flex: 0 1 auto;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .toggleset-row {
       display: flex;
-      justify-content: flex-end;
+      flex-direction: row;
       align-items: center;
+      justify-content: flex-end;
       gap: 2vw;
-      width: 100%;
-      margin-bottom: 1vw;
+      width: auto;
+      margin: 0;
+      margin-left: 2vw;
     }
     .togglelabel {
       font-size: 4vw;
@@ -57,7 +90,7 @@
       max-height: 24px;
       min-width: 36px;
     }
-    .switch input { opacity: 0; width: 0; height: 0;}
+    .switch input { opacity: 0; width: 0; height: 0; }
     .slider {
       position: absolute;
       cursor: pointer;
@@ -83,24 +116,27 @@
     input:checked + .slider:before {
       transform: translateX(4vw);
     }
-
-    .mainwrapper{
-      flex:1 1 auto;
-      min-height:0;
-      display:flex; flex-direction:column;
-    }
+    /* gridエリア = mainwrapper > gridarea-holder > grid-scroll-wrap > grid */
     .gridarea-holder{
-      position:relative;
-      flex:1 1 auto;
-      display:flex;flex-direction:column;
-      min-height:0;
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      min-width: 0;
+      width: 100vw;
     }
     .grid-scroll-wrap{
-      flex:1 1 auto;
-      min-height:0;
-      overflow-y:auto;
+      flex: 1 1 auto;
+      overflow-y: auto;
       overscroll-behavior: contain;
-      padding: 5vw 7vw 3vw 7vw;
+      padding: 4vw 4vw 2vw 4vw;
+      min-height: 0;
+      min-width: 0;
+      width: 100vw;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     .grid {
       display: grid;
@@ -108,7 +144,9 @@
       gap: 3vw;
       width: 100%;
       max-width: 500px;
+      min-width: 0;
       margin: 0 auto;
+      box-sizing: border-box;
     }
     @media (min-width: 600px) {
       .grid { grid-template-columns: repeat(4, 1fr);}
@@ -131,66 +169,76 @@
       position: relative;
       text-align: center;
       z-index:1;
+      box-sizing: border-box;
     }
     .imgbox.selected { background: #a7e2fa; border-color: #2c72a2 !important; color: #222;}
     .imgbox.sugg2 { background: #ffef9a; border-color: #d4ae36 !important; color: #643a00;}
     .imgbox.sugg3 { background: #ffb0af; border-color: #cd4440 !important; color: #760000;}
+
+    /* 結果表示エリアの高さを厳密に”3行分＋余白”に固定 */
     .result-holder{
-      flex-shrink: 0;
-      width: 100%;
+      width: 100vw;
       background: #fff;
       border-top: 1px solid #ddd;
       box-shadow: 0 -3px 12px #9992;
-      padding: 2vw 7vw 3vw 7vw;
-      position:sticky;
-      bottom:0;
+      padding: 2vw 4vw;
+      position: relative;
+      flex-shrink: 0;
       z-index:3;
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 18vw; /* 3行がしっかり収まる高さ（スマホ計算: 1行6vw*3=18vw） */
-      max-height: 22vw;
-      min-height: 14vw;
+      height: calc(6vw * 3 + 3vw); /* 6vw✕3行＋余白3vw = 初期スマホでも3行表示 */
+      min-height: 19vw;
+      max-height: 24vw;
+      box-sizing: border-box;
     }
     .result-list{
-      font-size:4.4vw;
+      font-size: 5vw;
       margin: 0;
-      padding: 0 0 1vw 1.8em;
+      padding: 0 0 0 1.6em;
       color: #222;
       width: 100%;
       list-style-type: disc;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      min-height: 12vw;
-      max-height: 22vw;
+      box-sizing: border-box;
     }
     .result-list li {
-      min-height: 5vw;
-      margin-top: 0.2vw;
-      margin-bottom: 0.2vw;
-      line-height: 1.2;
+      min-height: 6vw;
+      margin-top: 0;
+      margin-bottom: 0;
+      line-height: 1.1;
+      word-break: break-all;
+      display: flex;
+      align-items: center;
+      font-size: 5vw;
+    }
+    @media (min-width:600px){
+      .result-holder {height:30px;max-height:38px;padding-top:12px;padding-bottom:12px;}
+      .result-list {font-size:18px;}
+      .result-list li {font-size:18px;min-height:21px;}
     }
     @media (max-width:400px){
       .grid {font-size:5vw;}
       .result-list {font-size:5vw;}
       .title {font-size:7vw;}
       .togglelabel {font-size: 5vw;}
-      .result-holder{height:21vw;max-height:25vw;}
-      .result-list li{ min-height: 6vw;}
+      .result-holder{height:calc(7vw * 3 + 4vw);}
+      .result-list li{ min-height:7vw; }
     }
   </style>
 </head>
 <body>
   <div class="header">
-    <span class="title">リンクシナジーチェッカー</span>
-    <div class="toggleset-row">
-      <span class="togglelabel">1人選択時で候補表示</span>
-      <!-- カスタムスイッチ -->
-      <label class="switch">
-        <input type="checkbox" id="toggleChk">
-        <span class="slider"></span>
-      </label>
+    <div class="titlebar">
+      <span class="title">リンクシナジーチェッカー</span>
+      <div class="toggleset-row">
+        <span class="togglelabel">1人選択時で候補表示</span>
+        <!-- カスタムスイッチ -->
+        <label class="switch">
+          <input type="checkbox" id="toggleChk">
+          <span class="slider"></span>
+        </label>
+      </div>
     </div>
   </div>
   <div class="mainwrapper">
