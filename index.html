@@ -33,8 +33,19 @@
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      padding-top: 4vw;
-      padding-bottom: 1vw;
+      padding: 4vw 0 2vw 0;
+      box-sizing: border-box;
+    }
+    .titlebar {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      width: 94vw;
+      max-width: 540px;
+      margin: 0 auto;
+      position: relative;
+      box-sizing: border-box;
     }
     .title {
       font-size: 6vw;
@@ -42,24 +53,41 @@
       letter-spacing: .08em;
       color: #273755;
       text-align: center;
-      margin-bottom: 2vw;
-      margin-top: 0;
-      width: 100vw;
-      word-break: keep-all;
+      flex: 1 1 auto;
+      min-width: 0;
+      margin: 0 auto 0 auto;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .toggleset-row {
+    .update-btn {
+      width: 8vw;
+      min-width: 30px;
+      max-width: 42px;
+      height: 8vw;
+      min-height: 30px;
+      max-height: 42px;
+      padding: 0;
+      margin-left: 2vw;
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;align-items: center;justify-content: center;
+      position: absolute;
+      right: 0;
+      top: 50%; transform: translateY(-50%);
+    }
+    .update-btn svg { width: 7vw; height: 7vw; min-width:26px; min-height:26px; max-width:36px; max-height:36px;}
+    /* Switch row レイアウト */
+    .switch-row {
       display: flex;
-      flex-direction: row;
       align-items: center;
       justify-content: center;
       gap: 2vw;
-      margin-bottom: 2vw;
+      margin: 2vw 0 3vw 0;
       width: 100vw;
     }
-    .togglelabel {
+    .switchlabel {
       font-size: 4vw;
       color: #2c72a2;
       white-space: nowrap;
@@ -72,6 +100,7 @@
       height: 4.5vw;
       max-height: 24px;
       min-width: 36px;
+      vertical-align: middle;
     }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider {
@@ -166,7 +195,7 @@
     .imgbox.selected { background: #a7e2fa; border-color: #2c72a2 !important; color: #222;}
     .imgbox.sugg2 { background: #ffef9a; border-color: #d4ae36 !important; color: #643a00;}
     .imgbox.sugg3 { background: #ffb0af; border-color: #cd4440 !important; color: #760000;}
-    /* ===================== 結果領域 ============= */
+    /* 結果領域・必ず3行可視/高さ固定 */
     .result-holder{
       width: 100vw;
       background: #fff;
@@ -180,9 +209,9 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 24vw;
-      min-height: 24vw;
-      max-height: 28vw;
+      height: 26vw; /* 8vw×3+2vw余白分 スマホ100%で3行見える設計 */
+      min-height: 26vw;
+      max-height: 30vw;
       box-sizing: border-box;
     }
     .result-list{
@@ -202,42 +231,61 @@
       min-height: 100%;
     }
     .result-list li {
-      min-height: 6vw;
-      height: 7vw;
+      min-height: 8vw;
+      height: 8vw;
       margin-top: 0;
       margin-bottom: 0;
-      line-height: 1.18;
+      line-height: 1.2;
       word-break: break-all;
       display: flex;
       align-items: center;
       font-size: 5vw;
-      box-sizing: border-box;
       width: 100%;
       max-width: 520px;
     }
     @media (min-width:600px){
-      .result-holder {height:44px;max-height:54px;padding-top:8px;padding-bottom:8px;}
+      .result-holder {height:60px;max-height:72px;padding-top:8px;padding-bottom:8px;}
       .result-list {font-size:19px;}
-      .result-list li {font-size:19px;min-height:18px;height:19px;}
+      .result-list li {font-size:19px;min-height:20px;height:24px;}
     }
-    @media (max-width:400px){
-      .grid {font-size:5vw;}
-      .result-list {font-size:5vw;}
-      .title {font-size:7vw;}
-      .togglelabel {font-size: 5vw;}
-      .result-holder{height:calc(7vw * 3 + 4vw);}
-      .result-list li{ min-height:7vw; height:8vw;}
-      .imgbox {font-size:5vw;}
+    /* 更新時の中央モーダル */
+    .updatemsg {
+      position: fixed;
+      left: 50%; top: 50%;
+      transform: translate(-50%,-50%);
+      background: #fff;
+      color: #222;
+      box-shadow: 0 6px 24px #0004;
+      border-radius:16px;
+      z-index: 4000;
+      min-width: 60vw;
+      padding: 6vw 4vw;
+      font-size:5.2vw;
+      font-weight:bold;
+      text-align: center;
+      line-height: 1.3;
+      border:2px solid #3bb2df;
+      pointer-events: none;
+      opacity: 0.96;
     }
   </style>
 </head>
 <body>
   <div class="header">
-    <div class="title">リンクシナジーチェッカー</div>
-    <div class="toggleset-row">
-      <span class="togglelabel">1人選択時で候補表示</span>
+    <div class="titlebar">
+      <span class="title">リンクシナジーチェッカー</span>
+      <button class="update-btn" id="updateBtn" title="更新">
+        <!-- 時計回り回転 SVGアイコン -->
+        <svg viewBox="0 0 22 22" fill="none">
+          <path d="M11 2a9 9 0 0 1 9 9h-1.8a7.2 7.2 0 1 0 1.2 4.05" stroke="#337ab7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M20 2v7h-7" stroke="#338ddb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+    <div class="switch-row">
+      <span class="switchlabel">3組発動の候補表示</span>
       <label class="switch">
-        <input type="checkbox" id="toggleChk">
+        <input type="checkbox" id="show3Switch" />
         <span class="slider"></span>
       </label>
     </div>
@@ -251,6 +299,9 @@
     <div class="result-holder">
       <ul class="result-list" id="result"></ul>
     </div>
+  </div>
+  <div id="updateMsg" class="updatemsg" style="display:none;">
+    <div>組合せデータを<br>更新しました</div>
   </div>
 <script>
 const nameList = [
@@ -268,13 +319,17 @@ let selected = [];
 const grid = document.getElementById('grid');
 const boxes = [];
 let isCsvReady = false;
-let highlightSingle = false;
+let show3Switch = false; // 新トグル
+const show3SwitchEl = document.getElementById('show3Switch');
+show3SwitchEl.checked = false;
 
-const toggleChk = document.getElementById('toggleChk');
-toggleChk.onchange = function(){
-  highlightSingle = toggleChk.checked;
+show3SwitchEl.onchange = function(){
+  show3Switch = show3SwitchEl.checked;
   refreshSuggestions();
-};
+}
+
+// ★常時ON 1人選択時の候補強調と、show3Switch==ON時のノー選択強調
+let highlightSingle = true;
 
 function renderGrid() {
   grid.innerHTML = '';
@@ -331,9 +386,31 @@ function clearSuggestions() {
     b.classList.remove('sugg3');
   });
 }
+
+// 候補強調ロジック
 function refreshSuggestions() {
   clearSuggestions();
-  if (!csvRaw.length || selected.length > 2) return;
+  if (!csvRaw.length) return;
+
+  // 3組発動候補表示スイッチON時かつ未選択時に「返しデータ3つの候補を赤色強調」
+  if (show3Switch && selected.length === 0) {
+    const cands3 = [];
+    for (let row of csvRaw) {
+      const group = row.slice(0,3);
+      const resCount = row.slice(3).filter(x=>x!=="").length;
+      // 3つ返すデータで未選択
+      if (resCount === 3) {
+        group.forEach(nm=>{
+          const idx = nameList.indexOf(nm);
+          if(idx!==-1 && !cands3.includes(idx)) cands3.push(idx);
+        });
+      }
+    }
+    cands3.forEach(idx => boxes[idx].classList.add('sugg3'));
+    return; // 他の強調表示しない
+  }
+
+  // 1人・2人常に候補強調
   if ((highlightSingle && selected.length === 1) || selected.length === 2) {
     const selN = selected.map(idx => nameList[idx]);
     let cands2=[], cands3=[];
@@ -371,10 +448,27 @@ function findResult() {
 function showResult(arr) {
   const el = document.getElementById('result');
   let list = Array.isArray(arr) ? arr : [];
-  // 必ず3行分見えるよう未満の場合は空liで補完
+  // 必ず3行分見えるよう空白liで補完
   while(list.length < 3) list.push('');
   el.innerHTML = list.map(x=>x?`<li>${x}</li>`:`<li style="opacity:.01;">-</li>`).join('');
 }
+function showUpdateMsg(){
+  const box = document.getElementById('updateMsg');
+  box.style.display = "block";
+  setTimeout(()=>{box.style.display="none"}, 3000);
+}
+// 更新ボタンの動作
+document.getElementById('updateBtn').onclick = function(){
+  // ページの再読込風アクション
+  clearSelections();
+  show3Switch = false; show3SwitchEl.checked = false;
+  fetchCsv(CSV_URL); // 再読込
+  showUpdateMsg();
+  window.scrollTo(0,0);
+  // グリッド他UIも初期状態に復帰
+}
+
+// 初期化
 renderGrid();
 fetchCsv(CSV_URL);
 </script>
