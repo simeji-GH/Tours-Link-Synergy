@@ -6,29 +6,33 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <style>
     html, body {
-      min-height: 100%;
       margin: 0; padding: 0;
-      font-family: sans-serif;
-      background: #f7f7fa;
-      box-sizing: border-box;
-      width: 100vw;
-      overflow: hidden;
-      touch-action: manipulation;
-    }
-    body {
-      min-height: 100vh;
       min-width: 100vw;
+      min-height: 100vh;
       width: 100vw;
       height: 100vh;
+      background: #f7f7fa;
+      font-family: sans-serif;
+      overflow: hidden;
+    }
+    body {
       display: flex;
       flex-direction: column;
       align-items: stretch;
+      width: 100vw;
+      height: 100vh;
+      min-width: 100vw;
+      min-height: 100vh;
     }
     .header {
       width: 100vw;
       background: #f7f7fa;
       border-bottom: 1px solid #eee;
       flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
       padding-top: 4vw;
       padding-bottom: 1vw;
     }
@@ -39,6 +43,8 @@
       color: #273755;
       text-align: center;
       margin-bottom: 2vw;
+      margin-top: 0;
+      width: 100vw;
       word-break: keep-all;
       white-space: nowrap;
       overflow: hidden;
@@ -51,14 +57,13 @@
       justify-content: center;
       gap: 2vw;
       margin-bottom: 2vw;
-      width: 100%;
+      width: 100vw;
     }
     .togglelabel {
       font-size: 4vw;
       color: #2c72a2;
       white-space: nowrap;
     }
-    /* カスタムトグルスイッチ */
     .switch {
       position: relative;
       display: inline-block;
@@ -96,8 +101,10 @@
     }
     .mainwrapper{
       flex: 1 1 auto;
-      min-height: 0; min-width: 0;
-      width: 100vw; display: flex; flex-direction: column;
+      min-height: 0;
+      min-width: 0;
+      width: 100vw;
+      display: flex; flex-direction: column;
     }
     .gridarea-holder{
       flex: 1 1 auto;
@@ -159,24 +166,23 @@
     .imgbox.selected { background: #a7e2fa; border-color: #2c72a2 !important; color: #222;}
     .imgbox.sugg2 { background: #ffef9a; border-color: #d4ae36 !important; color: #643a00;}
     .imgbox.sugg3 { background: #ffb0af; border-color: #cd4440 !important; color: #760000;}
-    /* ----- 結果エリア ------ */
+    /* ===================== 結果領域 ============= */
     .result-holder{
       width: 100vw;
       background: #fff;
       border-top: 1px solid #ddd;
       box-shadow: 0 -3px 12px #9992;
-      padding-top: 1vw; padding-bottom: 1vw; 
-      padding-left: 4vw; padding-right: 4vw;
+      padding-top: 2vw; padding-bottom: 2vw; 
+      padding-left: 5vw; padding-right: 5vw;
       position: relative;
       flex-shrink: 0;
       z-index:3;
       display: flex;
       align-items: center;
       justify-content: center;
-      /* 7vw x 3行 + 4vw余白で確実に3行分表示 */
-      height: calc(7vw * 3 + 4vw);
-      min-height: 25vw;
-      max-height: 34vw;
+      height: 24vw;
+      min-height: 24vw;
+      max-height: 28vw;
       box-sizing: border-box;
     }
     .result-list{
@@ -188,12 +194,19 @@
       max-width: 540px;
       list-style-type: disc;
       box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: flex-start;
+      height: 100%;
+      min-height: 100%;
     }
     .result-list li {
-      min-height: 7vw;
+      min-height: 6vw;
+      height: 7vw;
       margin-top: 0;
       margin-bottom: 0;
-      line-height: 1.12;
+      line-height: 1.18;
       word-break: break-all;
       display: flex;
       align-items: center;
@@ -203,17 +216,17 @@
       max-width: 520px;
     }
     @media (min-width:600px){
-      .result-holder {height:44px;max-height:52px;padding-top:12px;padding-bottom:12px;}
+      .result-holder {height:44px;max-height:54px;padding-top:8px;padding-bottom:8px;}
       .result-list {font-size:19px;}
-      .result-list li {font-size:19px;min-height:18px;}
+      .result-list li {font-size:19px;min-height:18px;height:19px;}
     }
     @media (max-width:400px){
       .grid {font-size:5vw;}
       .result-list {font-size:5vw;}
       .title {font-size:7vw;}
       .togglelabel {font-size: 5vw;}
-      .result-holder{height:calc(8vw * 3 + 5vw);}
-      .result-list li{ min-height:8vw; }
+      .result-holder{height:calc(7vw * 3 + 4vw);}
+      .result-list li{ min-height:7vw; height:8vw;}
       .imgbox {font-size:5vw;}
     }
   </style>
@@ -357,8 +370,8 @@ function findResult() {
 }
 function showResult(arr) {
   const el = document.getElementById('result');
-  // 必ず3行分表示
   let list = Array.isArray(arr) ? arr : [];
+  // 必ず3行分見えるよう未満の場合は空liで補完
   while(list.length < 3) list.push('');
   el.innerHTML = list.map(x=>x?`<li>${x}</li>`:`<li style="opacity:.01;">-</li>`).join('');
 }
