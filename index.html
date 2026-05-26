@@ -78,7 +78,7 @@
       top: 50%; transform: translateY(-50%);
     }
     .update-btn svg { width: 7vw; height: 7vw; min-width:26px; min-height:26px; max-width:36px; max-height:36px;}
-    <!-- Switch row レイアウト -->
+    /* Switch row レイアウト */
     .switch-row {
       display: flex;
       align-items: center;
@@ -195,7 +195,7 @@
     .imgbox.selected { background: #a7e2fa; border-color: #2c72a2 !important; color: #222;}
     .imgbox.sugg2 { background: #ffef9a; border-color: #d4ae36 !important; color: #643a00;}
     .imgbox.sugg3 { background: #ffb0af; border-color: #cd4440 !important; color: #760000;}
-    <-- 結果領域・必ず3行可視/高さ固定 -->
+    /* 結果領域・必ず3行可視/高さ固定 */
     .result-holder{
       width: 100vw;
       background: #fff;
@@ -209,7 +209,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 26vw; <!-- 8vw×3+2vw余白分 スマホ100%で3行見える設計 -->
+      height: 26vw; /* 8vw×3+2vw余白分 スマホ100%で3行見える設計 */
       min-height: 26vw;
       max-height: 30vw;
       box-sizing: border-box;
@@ -328,8 +328,7 @@ show3SwitchEl.onchange = function(){
   refreshSuggestions();
 }
 
-// ★常時ON 1人選択時の候補強調と、show3Switch==ON時のノー選択強調
-let highlightSingle = true;
+let highlightSingle = true; //常時ON
 
 function renderGrid() {
   grid.innerHTML = '';
@@ -448,7 +447,6 @@ function findResult() {
 function showResult(arr) {
   const el = document.getElementById('result');
   let list = Array.isArray(arr) ? arr : [];
-  // 必ず3行分見えるよう空白liで補完
   while(list.length < 3) list.push('');
   el.innerHTML = list.map(x=>x?`<li>${x}</li>`:`<li style="opacity:.01;">-</li>`).join('');
 }
@@ -459,13 +457,11 @@ function showUpdateMsg(){
 }
 // 更新ボタンの動作
 document.getElementById('updateBtn').onclick = function(){
-  // ページの再読込風アクション
   clearSelections();
   show3Switch = false; show3SwitchEl.checked = false;
-  fetchCsv(CSV_URL); // 再読込
+  fetchCsv(CSV_URL);
   showUpdateMsg();
   window.scrollTo(0,0);
-  // グリッド他UIも初期状態に復帰
 }
 
 // 初期化
