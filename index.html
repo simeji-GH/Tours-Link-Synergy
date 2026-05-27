@@ -205,16 +205,16 @@
       background: #fff;
       border-top: 1px solid #ddd;
       box-shadow: 0 -3px 12px #9992;
-      padding: 2vw 0;
+      padding: 2vw 4vw;
       position: relative;
       flex-shrink: 0;
       z-index:3;
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 29vw;        /* 必ず3行見えるよう、余裕をもって増（8.7vw×3+余白） */
-      min-height: 29vw;
-      max-height: 34vw;
+      height: calc(6vw * 3 + 3vw); /* 6vw✕3行＋余白3vw = 初期スマホでも3行表示 */
+      min-height: 19vw;
+      max-height: 24vw;
       box-sizing: border-box;
     }
     .result-list{
