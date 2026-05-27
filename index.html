@@ -205,24 +205,25 @@
       background: #fff;
       border-top: 1px solid #ddd;
       box-shadow: 0 -3px 12px #9992;
-      padding: 2vw 4vw;
+      padding: 2vw 0;
       position: relative;
       flex-shrink: 0;
       z-index:3;
       display: flex;
       align-items: center;
       justify-content: center;
-      height: calc(6vw * 3 + 3vw); /* 6vw✕3行＋余白3vw = 初期スマホでも3行表示 */
-      min-height: 19vw;
-      max-height: 24vw;
+      height: 29vw;        /* 必ず3行見えるよう、余裕をもって増（8.7vw×3+余白） */
+      min-height: 29vw;
+      max-height: 34vw;
       box-sizing: border-box;
     }
     .result-list{
-      font-size: 5vw;
+      font-size: 5.3vw;
       margin: 0;
       padding: 0 0 0 1.6em;
       color: #222;
-      width: 100%;
+      width: 100vw;
+      max-width: 540px;
       list-style-type: disc;
       box-sizing: border-box;
       display: flex;
@@ -233,14 +234,15 @@
       min-height: 100%;
     }
     .result-list li {
-      min-height: 6vw;
+      min-height: 8.7vw;
+      height: 8.7vw;
       margin-top: 0;
       margin-bottom: 0;
-      line-height: 1.1;
+      line-height: 1.24;
       word-break: break-all;
       display: flex;
       align-items: center;
-      font-size: 5vw;
+      font-size: 5.3vw;
       width: 100%;
       max-width: 520px;
     }
