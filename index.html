@@ -23,14 +23,14 @@ body {
   align-items: center;
 }
 
-/* SVG更新ボタン */
+/* 更新ボタン（SVG） */
 #reload svg {
   width: 24px;
   height: 24px;
   cursor: pointer;
 }
 
-/* 選択エリア */
+/* スクロールエリア */
 #optionsArea {
   flex: 1;
   overflow-y: auto;
@@ -49,10 +49,10 @@ body {
   font-weight: bold;
 }
 
-/* グリッド */
+/* ★ 4列表示 */
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
 }
 
@@ -62,8 +62,10 @@ body {
   border-radius: 10px;
   background: #eee;
   text-align: center;
+  font-size: 13px;
 }
 
+/* 選択 */
 .selected {
   background: #007bff;
   color: #fff;
@@ -75,15 +77,21 @@ body {
 }
 
 .candidate3 {
-  background: #ffcccc;
+  background: #ffd6d6;
 }
 
 /* 結果 */
 #result {
   background: #fff;
   border-top: 1px solid #ccc;
-  /*padding: 10px;*/
-  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  padding: 8px 10px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom));
+}
+
+/* ★ 余白調整 */
+#result ul {
+  margin: 4px 0 0 0;
+  padding-left: 18px;
 }
 </style>
 </head>
@@ -94,11 +102,12 @@ body {
   <label><input type="checkbox" id="toggle"> 赤のみ</label>
 
   <div id="reload">
+    <!-- 回転矢印SVG -->
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
-    <path d="M21 3v5h-5"/>
-    <path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
-    <path d="M3 21v-5h5"/>
+      <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
+      <path d="M21 3v5h-5"/>
+      <path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+      <path d="M3 21v-5h5"/>
     </svg>
   </div>
 </div>
@@ -108,92 +117,107 @@ body {
 
 <script>
 let data = [];
-let prevData = [];
 let options = [];
 let selected = [];
 
-/* ブランドSVG（ここは本物に差し替えOK） */
+/* ブランドアイコン（簡易版） */
 const iconMap = {
   AS:`<svg width="16" height="16"><circle cx="8" cy="8" r="6" fill="#ff0000"/></svg>`,
   CG:`<svg width="16" height="16"><circle cx="8" cy="8" r="6" fill="#00aaff"/></svg>`,
   ML:`<svg width="16" height="16"><circle cx="8" cy="8" r="6" fill="#ffcc00"/></svg>`,
   SM:`<svg width="16" height="16"><circle cx="8" cy="8" r="6" fill="#00cc66"/></svg>`,
-  SC:`<svg width="16" height="16"><circle cx="8" cy="8" r="6" fill="#9966ff"/></svg>`,
-  GK:`<svg width="16" height="16"><circle cx="8" cy="8" r="6" fill="#ff8800"/></svg>`
+  SH:`<svg width="16" height="16"><circle cx="8" cy="8" r="6" fill="#9966ff"/></svg>`,
+  GM:`<svg width="16" height="16"><circle cx="8" cy="8" r="6" fill="#ff8800"/></svg>`
 };
 
+/* CSV読み込み */
 async function loadAll(force=false) {
   try {
-    const ts = force ? "?t="+Date.now() : "";
+    const ts = force ? "?t=" + Date.now() : "";
 
-    const r1 = await fetch("data.csv"+ts);
+    // data.csv
+    const r1 = await fetch("data.csv" + ts);
     if (!r1.ok) throw new Error();
     const t1 = await r1.text();
 
-    const newData = t1.trim().split(/\r?\n/).map(l=>{
-      const c=l.split(",").map(v=>v.trim());
+    data = t1.trim().split(/\r?\n/).map(l=>{
+      const c = l.split(",").map(v=>v.trim());
       return {
-        key:c.slice(0,3).sort().join(),
-        options:c.slice(0,3).sort(),
-        results:c.slice(3).filter(v=>v)
+        key: c.slice(0,3).sort().join(),
+        options: c.slice(0,3).sort(),
+        results: c.slice(3).filter(v=>v)
       };
     });
 
-    const r2 = await fetch("options.csv"+ts);
+    // options.csv
+    const r2 = await fetch("options.csv" + ts);
     if (!r2.ok) throw new Error();
     const t2 = await r2.text();
 
     options = t2.trim().split(/\r?\n/).slice(1).map(l=>{
-      const [name,cat]=l.split(",");
-      return {name:name.trim(),category:cat.trim()};
+      const [name,cat] = l.split(",");
+      return {
+        name: name.trim(),
+        category: cat.trim()
+      };
     });
 
-    // 差分検出
-    const oldKeys = new Set(data.map(d=>d.key));
-    const added = newData.filter(d=>!oldKeys.has(d.key));
-
-    prevData = data;
-    data = newData;
+    // ★ update.txt読み込み
+    let updateMessage = "";
+    if (force) {
+      try {
+        const r3 = await fetch("update.txt" + ts);
+        if (r3.ok) {
+          updateMessage = await r3.text();
+        }
+      } catch {}
+    }
 
     if (force) {
-      if (added.length) {
-        alert("データを更新しました\n追加："+added.map(a=>a.key).join(", "));
+      if (updateMessage) {
+        alert("データを更新しました\n" + updateMessage);
       } else {
-        alert("データを更新しました（変更なし）");
+        alert("データを更新しました");
       }
     }
 
-  } catch(e) {
+  } catch (e) {
     alert("更新に失敗しました");
   }
 }
 
+/* 描画 */
 function render() {
-  const area=document.getElementById("optionsArea");
-  area.innerHTML="";
+  const area = document.getElementById("optionsArea");
+  area.innerHTML = "";
 
-  const grouped={};
+  const grouped = {};
+
   options.forEach(o=>{
-    if(!grouped[o.category]) grouped[o.category]=[];
+    if (!grouped[o.category]) grouped[o.category] = [];
     grouped[o.category].push(o);
   });
 
   Object.keys(grouped).forEach(cat=>{
-    const div=document.createElement("div");
-    div.className="category";
+    const div = document.createElement("div");
+    div.className = "category";
 
-    div.innerHTML=`<div class="category-title">${iconMap[cat]||""} ${cat}</div>`;
+    div.innerHTML = `
+      <div class="category-title">
+        ${iconMap[cat] || ""} ${cat}
+      </div>
+    `;
 
-    const grid=document.createElement("div");
-    grid.className="grid";
+    const grid = document.createElement("div");
+    grid.className = "grid";
 
     grouped[cat].forEach(opt=>{
-      const el=document.createElement("div");
-      el.className="option";
-      el.dataset.name=opt.name;
-      el.textContent=opt.name;
+      const el = document.createElement("div");
+      el.className = "option";
+      el.dataset.name = opt.name;
+      el.textContent = opt.name;
 
-      el.onclick=()=>toggle(opt.name);
+      el.onclick = ()=>toggle(opt.name);
 
       grid.appendChild(el);
     });
@@ -205,48 +229,54 @@ function render() {
   updateUI();
 }
 
-function toggle(name){
-  if(selected.includes(name)){
-    selected=selected.filter(v=>v!==name);
-  }else{
-    if(selected.length>=3) return;
+/* 選択 */
+function toggle(name) {
+  if (selected.includes(name)) {
+    selected = selected.filter(v=>v!==name);
+  } else {
+    if (selected.length >= 3) return;
     selected.push(name);
   }
   updateUI();
 }
 
-function updateUI(){
-  const toggleRed=document.getElementById("toggle").checked;
+/* UI更新 */
+function updateUI() {
+  const toggleRed = document.getElementById("toggle").checked;
 
   document.querySelectorAll(".option").forEach(el=>{
-    const name=el.dataset.name;
-    el.className="option";
+    const name = el.dataset.name;
+    el.className = "option";
 
-    if(selected.includes(name)){
+    if (selected.includes(name)) {
       el.classList.add("selected");
       return;
     }
 
-    let matches;
+    if (selected.length === 0) {
+      if (toggleRed) {
+        const matches = data.filter(d=>d.options.includes(name));
+        if (!matches.length) return;
 
-    if(selected.length===0){
-      if(toggleRed){
-        matches=data.filter(d=>d.options.includes(name));
-      }else{
-        return;
+        const max = Math.max(...matches.map(m=>m.results.length));
+        if (max >= 3) el.classList.add("candidate3");
       }
-    }else{
-      const test=[...selected,name];
-      matches=data.filter(d=>test.every(t=>d.options.includes(t)));
+      return;
     }
 
-    if(!matches.length) return;
+    const test = [...selected, name];
 
-    const max=Math.max(...matches.map(m=>m.results.length));
+    const matches = data.filter(d =>
+      test.every(t => d.options.includes(t))
+    );
 
-    if(max>=3){
+    if (!matches.length) return;
+
+    const max = Math.max(...matches.map(m=>m.results.length));
+
+    if (max >= 3) {
       el.classList.add("candidate3");
-    }else if(max>=2 && !toggleRed){
+    } else if (max >= 2 && !toggleRed) {
       el.classList.add("candidate2");
     }
   });
@@ -254,34 +284,38 @@ function updateUI(){
   showResult();
 }
 
-function showResult(){
-  const r=document.getElementById("result");
+/* 結果表示 */
+function showResult() {
+  const r = document.getElementById("result");
 
-  if(selected.length!==3){
-    r.innerHTML="";
+  if (selected.length !== 3) {
+    r.innerHTML = "";
     return;
   }
 
-  const key=[...selected].sort().join();
-  const match=data.find(d=>d.key===key);
+  const key = [...selected].sort().join();
+  const match = data.find(d=>d.key === key);
 
-  if(!match){
-    r.innerHTML="該当なし";
+  if (!match) {
+    r.innerHTML = "該当なし";
     return;
   }
 
-  r.innerHTML="<ul>"+match.results.map(v=>`<li>${v}</li>`).join("")+"</ul>";
+  r.innerHTML =
+    "<ul>" +
+    match.results.map(v=>`<li>${v}</li>`).join("") +
+    "</ul>";
 }
 
 /* イベント */
-document.getElementById("toggle").onchange=updateUI;
+document.getElementById("toggle").onchange = updateUI;
 
-document.getElementById("reload").onclick=async()=>{
+document.getElementById("reload").onclick = async ()=>{
   await loadAll(true);
   render();
 };
 
-async function init(){
+async function init() {
   await loadAll();
   render();
 }
