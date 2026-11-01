@@ -195,7 +195,7 @@ async function loadAll(force=false){
         const r3 = await fetch("update.txt"+ts);
         if(r3.ok){
           const msg = await r3.text();
-          showToast("更新しました：" + msg);
+          showToast(msg);
         }else{
           showToast("データを更新しました");
         }
