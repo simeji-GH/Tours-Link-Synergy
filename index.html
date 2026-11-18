@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f8f8f8">
-<title>アイドル組み合わせ検索</title>
+<title>リンクシナジーチェッカー</title>
 <style>
 :root{
   --page-bg:#fff; --header-bg:#f7f7f7; --chip:#eeeeef;
-  --selected:#e8f1ff; --selected-border:#7aaeff;
+  --selected:#d9f4dd; --selected-border:#75c98a;
   --red:#f7cccc; --yellow:#fff0bd; --blue:#dceaff;
   --text:#171717; --muted:#666; --line:#d5d5d5;
   --result-height:120px;
@@ -37,9 +37,9 @@ button{cursor:pointer}
 #optionsArea{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;
   padding:16px 12px calc(var(--result-height) + 22px)}
 .category{margin:8px 0 22px}
-.category-title{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:750;
+.category-title{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:750;
   margin:0 3px 8px}
-.brand-mark{width:24px;height:24px;flex:0 0 24px;display:inline-block}
+.brand-mark{width:16px;height:16px;flex:0 0 16px;display:inline-block}
 .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .option{
   min-height:54px;padding:9px 5px;border:1px solid transparent;border-radius:15px;
@@ -68,14 +68,20 @@ button{cursor:pointer}
 #conditionArrow{position:absolute;top:8px;left:8px;z-index:4}
 #conditionSummary{padding:8px 58px 0 58px;color:#555;font-size:12px;min-height:34px}
 #menuBackdrop,#overlayBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:20}
-#drawer{position:fixed;left:0;top:0;bottom:0;width:min(78vw,300px);background:#fff;
-  z-index:21;padding:18px 14px;box-shadow:4px 0 18px rgba(0,0,0,.18);
-  transform:translateX(-105%);transition:transform .22s ease}
+#drawer{position:fixed;right:0;top:0;bottom:0;width:max-content;max-width:90vw;min-width:145px;background:#fff;
+  z-index:21;padding:18px 14px;box-shadow:-4px 0 18px rgba(0,0,0,.18);
+  transform:translateX(105%);transition:transform .22s ease;display:flex;flex-direction:column}
 #drawer.open{transform:translateX(0)}
 .drawer-title{font-size:18px;font-weight:750;margin:12px 8px 20px}
 .drawer-link{width:100%;text-align:left;border:0;background:#f3f3f3;border-radius:10px;
   padding:14px;margin:6px 0;font-size:16px}
 .drawer-link.active{background:#e6efff;color:#155bb0;font-weight:700}
+#drawerReload{margin-top:auto;white-space:nowrap;border:1px solid #bbb;background:#f7f7f7;border-radius:10px;padding:12px 16px;font-weight:700}
+#conditionSummaryRow{display:flex;align-items:center;gap:8px;padding:6px 12px}
+#conditionSummary{flex:1;min-width:0;padding:0;color:#555;font-size:12px}
+#conditionChange{border:1px solid #bbb;background:#f5f5f5;border-radius:9px;padding:8px 10px;white-space:nowrap;font-size:14px}
+#eventPresetLabel{display:flex;align-items:center;gap:8px;margin:14px 0 10px;font-weight:700}
+#eventPreset{width:19px;height:19px;accent-color:#287ee8}
 .hidden{display:none!important}
 #settingsOverlay{
   position:fixed;inset:0;background:#fff;z-index:30;display:flex;flex-direction:column;
@@ -106,20 +112,17 @@ button{cursor:pointer}
 @media(max-width:380px){
   .grid{gap:6px}
   .option{min-height:50px;padding:7px 3px;font-size:12px;border-radius:12px}
-  .category-title{font-size:20px}
+  .category-title{font-size:14px}
   .combo-list{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
 <header id="header">
-  <button class="icon-button" id="menuButton" aria-label="メニューを開く">
-    <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-  </button>
   <div id="headerSpacer"></div>
   <label id="redOnlyLabel"><input type="checkbox" id="redOnly">3組のみ</label>
-  <button class="icon-button" id="reload" aria-label="データとページを更新" title="更新">
-    <svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9A7 7 0 0 1 18 6l2 2M4 16l2 2a7 7 0 0 0 12.4-3"/></svg>
+  <button class="icon-button" id="menuButton" aria-label="メニューを開く">
+    <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
   </button>
 </header>
 
@@ -128,10 +131,7 @@ button{cursor:pointer}
     <div id="optionsArea"></div>
   </section>
   <section id="page2Results" class="hidden">
-    <button class="icon-button" id="conditionArrow" aria-label="条件を変更">
-      <svg viewBox="0 0 24 24"><path d="M4 12h15M13 5l7 7-7 7"/></svg>
-    </button>
-    <div id="conditionSummary"></div>
+    <div id="conditionSummaryRow"><div id="conditionSummary"></div><button id="conditionChange">条件変更</button></div>
     <div id="page2OptionsArea" style="flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:8px 12px calc(var(--result-height) + 22px)"></div>
   </section>
 </main>
@@ -143,6 +143,7 @@ button{cursor:pointer}
   <div class="drawer-title">メニュー</div>
   <button class="drawer-link active" data-page="1">ページ1</button>
   <button class="drawer-link" data-page="2">ページ2</button>
+  <button id="drawerReload">データ更新</button>
 </nav>
 
 <div id="overlayBackdrop" class="hidden"></div>
@@ -150,7 +151,7 @@ button{cursor:pointer}
   <div id="settingsHeader">
     <h2>ページ2 条件設定</h2>
     <button class="icon-button" id="closeSettings" aria-label="条件設定を閉じる">
-      <svg viewBox="0 0 24 24"><path d="M20 12H5M11 5l-7 7 7 7"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg>
     </button>
   </div>
   <div id="settingsBody">
@@ -160,6 +161,7 @@ button{cursor:pointer}
       <select id="idolSelect2" aria-label="2人目"><option value="">選択しない</option></select>
     </div>
     <div class="section-title" style="margin-top:24px">組み合わせ内容（複数選択可）</div>
+    <label id="eventPresetLabel"><input id="eventPreset" type="checkbox">第1回イベント</label>
     <div id="combinationList"></div>
   </div>
   <button id="confirmConditions">この条件で確認</button>
@@ -178,6 +180,7 @@ const BRAND_COLORS = {
 let data = [];
 let options = [];
 let combinations = [];
+let event1Names = []; // event1.csv に1行1件で記載
 let selectedPage1 = [];
 let selectedPage2 = [];
 let selectedIdols = [];
@@ -258,7 +261,12 @@ async function loadAll(showMessage=false){
     if(!newData.length) throw new Error("data.csv に有効なデータがありません");
     if(!newOptions.length) throw new Error("options.csv に有効なデータがありません");
     if(!newCombinations.length) throw new Error("combinations.csv に有効なデータがありません");
-    data=newData; options=newOptions; combinations=newCombinations;
+    let newEventNames=[];
+    try{
+      const eventText=await fetchText("event1.csv",stamp);
+      newEventNames=parseCSV(eventText).map(r=>(r[0]||"").trim()).filter(v=>v && v!=="name");
+    }catch(_){ /* イベント設定がまだない場合は無効 */ }
+    data=newData; options=newOptions; combinations=newCombinations; event1Names=newEventNames;
     renderAll();
     if(showMessage){
       let message="データを更新しました";
@@ -409,13 +417,32 @@ function renderCombinationSettings(){
       checkbox.value=item.name;checkbox.checked=selectedCombinations.includes(item.name);
       checkbox.addEventListener("change",()=>{
         selectedCombinations=Array.from(root.querySelectorAll('input[type="checkbox"]:checked')).map(x=>x.value);
+        syncEventPreset();
       });
       const text=document.createElement("span");text.textContent=item.name;
       label.append(checkbox,text);list.appendChild(label);
     });
     section.append(heading,list);root.appendChild(section);
   });
+  syncEventPreset();
 }
+function syncEventPreset(){
+  const preset=document.getElementById("eventPreset");
+  const available=new Set(combinations.map(x=>x.name));
+  const names=event1Names.filter(x=>available.has(x));
+  preset.disabled=names.length===0;
+  preset.checked=names.length>0 && names.every(x=>selectedCombinations.includes(x));
+}
+document.getElementById("eventPreset").addEventListener("change",e=>{
+  const enabled=e.target.checked;
+  const names=new Set(event1Names);
+  const root=document.getElementById("combinationList");
+  root.querySelectorAll('input[type="checkbox"]').forEach(box=>{
+    if(names.has(box.value)) box.checked=enabled;
+  });
+  selectedCombinations=Array.from(root.querySelectorAll('input[type="checkbox"]:checked')).map(x=>x.value);
+  syncEventPreset();
+});
 document.getElementById("idolSelect1").addEventListener("change",()=>{
   const first=document.getElementById("idolSelect1");
   const second=document.getElementById("idolSelect2");
@@ -475,14 +502,15 @@ function closeDrawer(){
 document.getElementById("menuButton").addEventListener("click",openDrawer);
 document.getElementById("menuBackdrop").addEventListener("click",closeDrawer);
 document.querySelectorAll(".drawer-link").forEach(button=>button.addEventListener("click",()=>setPage(Number(button.dataset.page))));
-document.getElementById("conditionArrow").addEventListener("click",openSettings);
+document.getElementById("conditionChange").addEventListener("click",openSettings);
 document.getElementById("closeSettings").addEventListener("click",closeSettings);
 document.getElementById("overlayBackdrop").addEventListener("click",closeSettings);
 document.getElementById("redOnly").addEventListener("change",()=>updateUI(1));
 
 /* 更新：CSV取得に失敗した場合は現在の表示を維持。成功後は最新HTMLも再読み込み */
-document.getElementById("reload").addEventListener("click",async()=>{
-  const button=document.getElementById("reload");
+document.getElementById("drawerReload").addEventListener("click",async()=>{
+  const button=document.getElementById("drawerReload");
+  closeDrawer();
   button.disabled=true;
   document.body.classList.add("loading");
   const ok=await loadAll(true);
